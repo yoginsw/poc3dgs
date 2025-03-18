@@ -19,18 +19,19 @@
         </script>
     <script type="module" src="./lib/pwc.mjs"></script>
     <script type="module">
-        window.settings = { 
-            "camera": { 
-                "fov": 50, 
-                "position": [-100.860447883605957,120.004945755004883,120.645120620727539], 
-                "target": [1.685568448694684,-1.1600100214397635,0.4871852855118668],
-                "startAnim": "none", 
-                "animTrack": null 
-            }, 
-            "background": { 
-                "color": [1.0, 1.0, 1.0] 
-            }, 
-            "animTracks": [] };
+        window.settings = {
+            "camera": {
+                "fov": 50,
+                "position": [0, 100, 169.53475952148438],
+                "target": [0, 0, 0],
+                "startAnim": "none",
+                "animTrack": null
+            },
+            "background": {
+                "color": [1.0, 1.0, 1.0]
+            },
+            "animTracks": []
+        };
     </script>
 </head>
 
@@ -42,7 +43,7 @@
         <pc-scene>
             <!-- Camera (with XR support) -->
             <pc-entity name="camera root">
-                <pc-entity name="camera">
+                <pc-entity name="camera" up="0,-1,0">
                     <pc-camera near-clip="0.01" far-clip="1000" horizontal-fov="true" tonemap="none"></pc-camera>
                     <pc-scripts>
                         <pc-script name="cameraControls"></pc-script>

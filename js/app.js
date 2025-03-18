@@ -68,6 +68,52 @@ class FrameScene extends Script {
                 };
             }
         }
+
+        // 휠 관련 속성 추가
+        this.zoomSpeed = 0.15;
+        this.minDistance = 0.5;
+        this.maxDistance = 50;
+        this.targetDistance = null;
+        this.currentDistance = null;
+        this.isWheelActive = false;
+
+        // 휠 이벤트 바인딩 및 등록
+        this.handleWheel = this.handleWheel.bind(this);
+        window.addEventListener('wheel', this.handleWheel, { passive: false });
+    }
+
+    // 휠 이벤트 핸들러 추가
+    handleWheel(event) {
+        if (this.targetDistance === null) {
+            // 초기 거리 계산
+            const gsplatComponent = this.app.root.findComponent('gsplat');
+            if (gsplatComponent?.instance?.meshInstance?.aabb) {
+                const bbox = gsplatComponent.instance.meshInstance.aabb;
+                const sceneSize = bbox.halfExtents.length();
+                this.currentDistance = sceneSize * 2;
+                this.targetDistance = this.currentDistance;
+                this.targetPosition = bbox.center.clone();
+            } else {
+                this.currentDistance = 5;
+                this.targetDistance = this.currentDistance;
+                this.targetPosition = new Vec3(0, 0, 0);
+            }
+        }
+
+        event.preventDefault();
+        this.isWheelActive = true;
+
+        const delta = -Math.sign(event.deltaY) * this.zoomSpeed;
+        this.targetDistance = Math.max(
+            this.minDistance,
+            Math.min(this.maxDistance, this.targetDistance * (1 - delta))
+        );
+
+        // 기존 애니메이션 취소
+        this.cancelAnimation && this.cancelAnimation();
+
+        // 렌더링 업데이트 요청
+        this.app.renderNextFrame = true;
     }
 
     frameScene(bbox, smooth = true) {
@@ -115,7 +161,8 @@ class FrameScene extends Script {
         };
 
         // listen for interaction events
-        const events = ['wheel', 'pointerdown', 'contextmenu'];
+        //const events = ['wheel', 'pointerdown', 'contextmenu'];
+        const events = ['pointerdown', 'contextmenu'];
         const handler = (e) => {
             cancelAnimation();
             events.forEach(event => app.graphicsDevice.canvas.removeEventListener(event, handler));
@@ -251,12 +298,12 @@ class FrameScene extends Script {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-   
     const appElement = await document.querySelector('pc-app').ready();
     const cameraElement = await document.querySelector('pc-entity[name="camera"]').ready();
 
     const app = await appElement.app;
 
+    // loading 3dgs model
     const gsplatUrl = "./mongol.compressed.ply";
     // GSplat 파일을 로드하기 위한 자산(Asset)을 생성합니다.
     var gsplatAsset = new Asset("gsplat", "gsplat", { url: gsplatUrl });
@@ -266,10 +313,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // GSplat 자산이 로드되면, GSplat 컴포넌트를 생성하고 엔티티에 추가합니다.
         var entity = new Entity();
         app.root.addChild(entity);
-
-        //entity.setPosition(0, 0, 0);         // x, y, z 위치 설정
-        //entity.setRotation(0, 0, 0);         // x, y, z 축 기준 회전 설정 (오일러 각도, 단위: 도)
-        //entity.setLocalScale(1, 1, 1);
 
         // GSplat 컴포넌트를 엔티티에 추가합니다.
         entity.addComponent('gsplat', {
@@ -293,14 +336,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settings = await window.settings;
 
     camera.camera.clearColor = new Color(settings.background.color);
-    camera.camera.position = settings.camera.position;
-    camera.camera.target = settings.camera.target;
     camera.camera.fov = settings.camera.fov;
-    camera.camera.up = new Vec3(0, 1, 0);
     camera.script.create(FrameScene, {
         properties: { settings }
     });
-
 
     // Update loading indicator
     const assets = app.assets.filter(asset => asset.type === 'gsplat');
@@ -313,6 +352,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingText.textContent = `${v}%`;
             loadingBar.style.backgroundImage = 'linear-gradient(90deg, #F60 0%, #F60 ' + v + '%, white ' + v + '%, white 100%)';
             poster?.progress(v);
+        });
+        asset.on('load', (ast) => {
+            window.setTimeout(() => {
+                // 강제로 화면 업데이트
+                app.renderNextFrame = true;
+                // 또는 다음 프레임을 기다리지 않고 즉시 렌더링
+                app.render();
+
+            }, 200);
         });
     }
 
@@ -403,4 +451,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.buttonContainer.classList.add('hidden');
     }
 });
-

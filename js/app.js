@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.arMode.classList.remove('hidden');
         dom.arMode.addEventListener('click', () => app.xr.start(()=>{
             app.root.findComponent('camera');
-            cameraEntity.camera.setLocalPosition(30, 1.6, 30);
+            app.xr.camera.setLocalPosition(30, 1.6, 30);
         }, 'immersive-ar', 'local-floor'));
     }
 
@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.vrMode.classList.remove('hidden');
         dom.vrMode.addEventListener('click', () => app.xr.start(()=> {
             app.root.findComponent('camera');
-            cameraEntity.camera.setLocalPosition(30, 1.6, 30);
+            app.xr.camera.setLocalPosition(30, 1.6, 30);
         }, 'immersive-vr', 'local-floor'));
     }
 

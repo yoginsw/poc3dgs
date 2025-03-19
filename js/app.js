@@ -414,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.arMode.addEventListener('click', () => app.xr.start(()=>{
             const camera = app.root.findComponent('camera');
             camera.setLocalPosition(30, 1.6, 30);
+            return camera;
         }, 'immersive-ar', 'local-floor'));
     }
 
@@ -423,6 +424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.vrMode.addEventListener('click', () => app.xr.start(()=> {
             const camera = app.root.findComponent('camera');
             camera.setLocalPosition(30, 1.6, 30);
+            return camera;
         }, 'immersive-vr', 'local-floor'));
     }
 

@@ -411,21 +411,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // AR
     if (app.xr.isAvailable('immersive-ar')) {
         dom.arMode.classList.remove('hidden');
-        dom.arMode.addEventListener('click', () => app.xr.start(()=>{
-            const camera = app.root.findComponent('camera');
-            camera.setLocalPosition(30, 1.6, 30);
-            return camera;
-        }, 'immersive-ar', 'local-floor'));
+        dom.arMode.addEventListener('click', () => app.xr.start(app.root.findComponent('camera'), 'immersive-ar', 'local-floor'));
     }
 
     // VR
     if (app.xr.isAvailable('immersive-vr')) {
         dom.vrMode.classList.remove('hidden');
-        dom.vrMode.addEventListener('click', () => app.xr.start(()=> {
-            const camera = app.root.findComponent('camera');
-            camera.setLocalPosition(30, 1.6, 30);
-            return camera;
-        }, 'immersive-vr', 'local-floor'));
+        dom.vrMode.addEventListener('click', () => app.xr.start(app.root.findComponent('camera'), 'immersive-vr', 'local-floor'));
     }
 
     // Fullscreen

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayCanvas White Cube with Text</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        #application-canvas {
+            width: 100%;
+            height: 100vh;
+            display: block;
+        }
+    </style>
+    <!-- ESM 형식으로 PlayCanvas 로드 -->
+</head>
+<body>
+    <canvas id="application-canvas"></canvas>
+    
+    <script type="module">
+        // PlayCanvas 모듈 import
+        import * as pc from './lib/playcanvas.mjs';
+
+				// Create a PlayCanvas application
+        const canvas = document.getElementById('application-canvas');
+        const app = new pc.Application(canvas);
+        
+        // Fill the available space at full resolution
+        app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+        app.setCanvasResolution(pc.RESOLUTION_AUTO);
+        
+        // Ensure canvas is resized when window changes size
+        window.addEventListener('resize', () => app.resizeCanvas());
+        
+        // Create camera entity
+        const camera = new pc.Entity('camera');
+        camera.addComponent('camera', {
+            clearColor: new pc.Color(0.1, 0.1, 0.1)
+        });
+        
+        // Position the camera
+        camera.setPosition(0, 0, 5);
+        
+        // Add camera to hierarchy
+        app.root.addChild(camera);
+        
+        // Create directional light entity
+        const light = new pc.Entity('light');
+        light.addComponent('light', {
+            type: 'directional',
+            color: new pc.Color(1, 1, 1),
+            castShadows: true,
+            intensity: 2,
+            shadowBias: 0.2,
+            shadowDistance: 16,
+            normalOffsetBias: 0.05
+        });
+        
+        // Set the light's direction
+        light.setEulerAngles(45, 45, 0);
+        
+        // Add light to hierarchy
+        app.root.addChild(light);
+        
+        // Function to create texture with text
+        function createTextTexture(text, width = 512, height = 512) {
+            // Create a canvas to draw the text
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Fill background
+            ctx.fillStyle = '##E13B2F';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Setup text
+            ctx.font = 'bold 48px "Noto Sans KR"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            
+            // Draw text in center
+            ctx.fillText(text, width / 2, height / 2);
+            
+            // Draw a border
+            //ctx.strokeStyle = '#ff0000';
+            //ctx.lineWidth = 8;
+            //ctx.strokeRect(16, 16, width - 32, height - 32);
+            
+            // Create a PlayCanvas texture from the canvas
+            const texture = new pc.Texture(app.graphicsDevice);
+            texture.setSource(canvas);
+            
+            return texture;
+        }
+        
+        // Create a cube entity
+        const cube = new pc.Entity('cube');
+        cube.addComponent('model', {
+            type: 'box'
+        });
+        
+        // Create material with text texture
+        const material = new pc.StandardMaterial();
+        material.diffuseMap = createTextTexture('안녕하세요?');
+        material.update();
+        
+        // Assign material to cube model
+        cube.model.material = material;
+        
+        // Add cube to scene
+        app.root.addChild(cube);
+        
+        // Create rotation script
+        const RotateScript = pc.createScript('rotateScript');
+        
+        RotateScript.prototype.update = function(dt) {
+            this.entity.rotate(10 * dt, 15 * dt, 5 * dt);
+        };
+        
+        // Register and apply rotation script to the cube
+        app.scripts.add(RotateScript);
+        cube.addComponent('script');
+        cube.script.create('rotateScript');
+        
+        // Start the application
+        app.start();
+    </script>
+</html>
+</body>

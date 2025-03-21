@@ -1,4 +1,4 @@
-import { BoundingBox, Color, Mat4, Script, Vec3, Asset, Entity } from 'playcanvas';
+import * as pc from 'playcanvas';
 
 import { CubicSpline } from 'spline';
 
@@ -36,14 +36,14 @@ class Poster {
 
 const poster = params.posterUrl && new Poster(params.posterUrl);
 
-class FrameScene extends Script {
+class FrameScene extends pc.Script {
     initialize() {
         const { settings } = this;
         const { camera, animTracks } = settings;
         const { position, target } = camera;
 
-        this.position = position && new Vec3(position);
-        this.target = target && new Vec3(target);
+        this.position = position && new pc.Vec3(position);
+        this.target = target && new pc.Vec3(target);
 
         // construct camera animation track
         if (animTracks?.length > 0 && settings.camera.startAnim === 'animTrack') {
@@ -96,7 +96,7 @@ class FrameScene extends Script {
             } else {
                 this.currentDistance = 5;
                 this.targetDistance = this.currentDistance;
-                this.targetPosition = new Vec3(0, 0, 0);
+                this.targetPosition = new pc.Vec3(0, 0, 0);
             }
         }
 
@@ -104,6 +104,7 @@ class FrameScene extends Script {
         this.isWheelActive = true;
 
         const delta = -Math.sign(event.deltaY) * this.zoomSpeed;
+
         this.targetDistance = Math.max(
             this.minDistance,
             Math.min(this.maxDistance, this.targetDistance * (1 - delta))
@@ -120,13 +121,13 @@ class FrameScene extends Script {
         const sceneSize = bbox.halfExtents.length();
         const distance = sceneSize / Math.sin(this.entity.camera.fov / 180 * Math.PI * 0.5);
         this.entity.script.cameraControls.sceneSize = sceneSize;
-        this.entity.script.cameraControls.focus(bbox.center, new Vec3(2, 1, 2).normalize().mulScalar(distance).add(bbox.center), smooth);
+        this.entity.script.cameraControls.focus(bbox.center, new pc.Vec3(2, 1, 2).normalize().mulScalar(distance).add(bbox.center), smooth);
     }
 
     resetCamera(bbox, smooth = true) {
         const sceneSize = bbox.halfExtents.length();
         this.entity.script.cameraControls.sceneSize = sceneSize * 0.2;
-        this.entity.script.cameraControls.focus(this.target ?? Vec3.ZERO, this.position ?? new Vec3(2, 1, 2), smooth);
+        this.entity.script.cameraControls.focus(this.target ?? Vec3.ZERO, this.position ?? new pc.Vec3(2, 1, 2), smooth);
     }
 
     initCamera() {
@@ -139,7 +140,7 @@ class FrameScene extends Script {
         const gsplatComponent = app.root.findComponent('gsplat');
 
         // calculate the bounding box
-        const bbox = gsplatComponent?.instance?.meshInstance?.aabb ?? new BoundingBox();
+        const bbox = gsplatComponent?.instance?.meshInstance?.aabb ?? new pc.BoundingBox();
         if (bbox.halfExtents.length() > 100 || this.position || this.target) {
             this.resetCamera(bbox, false);
         } else {
@@ -153,16 +154,16 @@ class FrameScene extends Script {
                 // copy current camera position and target
                 const r = this.cameraAnim.result;
                 this.entity.script.cameraControls.focus(
-                    new Vec3(r[3], r[4], r[5]),
-                    new Vec3(r[0], r[1], r[2]),
+                    new pc.Vec3(r[3], r[4], r[5]),
+                    new pc.Vec3(r[0], r[1], r[2]),
                     false
                 );
             }
         };
 
         // listen for interaction events
-        //const events = ['wheel', 'pointerdown', 'contextmenu'];
-        const events = ['pointerdown', 'contextmenu'];
+        const events = ['wheel', 'pointerdown', 'contextmenu'];
+        //const events = ['pointerdown', 'contextmenu'];
         const handler = (e) => {
             cancelAnimation();
             events.forEach(event => app.graphicsDevice.canvas.removeEventListener(event, handler));
@@ -218,8 +219,8 @@ class FrameScene extends Script {
             }
         });
 
-        const prevProj = new Mat4();
-        const prevWorld = new Mat4();
+        const prevProj = new pc.Mat4();
+        const prevWorld = new pc.Mat4();
 
         app.on('framerender', () => {
             if (!app.autoRender && !app.renderNextFrame) {
@@ -300,18 +301,17 @@ class FrameScene extends Script {
 document.addEventListener('DOMContentLoaded', async () => {
     const appElement = await document.querySelector('pc-app').ready();
     const cameraElement = await document.querySelector('pc-entity[name="camera"]').ready();
-
     const app = await appElement.app;
 
     // loading 3dgs model
     const gsplatUrl = "./mongol.compressed.ply";
     // GSplat 파일을 로드하기 위한 자산(Asset)을 생성합니다.
-    var gsplatAsset = new Asset("gsplat", "gsplat", { url: gsplatUrl });
+    var gsplatAsset = new pc.Asset("gsplat", "gsplat", { url: gsplatUrl });
 
     // 자산 로드 이벤트를 처리합니다.
     gsplatAsset.on('load', function (asset) {
         // GSplat 자산이 로드되면, GSplat 컴포넌트를 생성하고 엔티티에 추가합니다.
-        var entity = new Entity();
+        var entity = new pc.Entity();
         app.root.addChild(entity);
 
         // GSplat 컴포넌트를 엔티티에 추가합니다.
@@ -321,6 +321,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //console.log("GSplat 파일 로드 완료!");
         document.getElementById('loadingWrap').classList.add('hidden');
+
+        const message = "징키스칸 동상";
+        addExplainCube(app, message, 3, 0, 20, 1);
+
     });
 
     // 자산 로드 오류 이벤트를 처리합니다.
@@ -332,10 +336,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     app.assets.add(gsplatAsset);
     app.assets.load(gsplatAsset);
 
+    /*
+    */
     const camera = cameraElement.entity;
     const settings = await window.settings;
 
-    camera.camera.clearColor = new Color(settings.background.color);
+    camera.camera.clearColor = new pc.Color(settings.background.color);
     camera.camera.fov = settings.camera.fov;
     camera.script.create(FrameScene, {
         properties: { settings }
@@ -355,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         asset.on('load', (ast) => {
             window.setTimeout(() => {
+                // 
                 // 강제로 화면 업데이트
                 app.renderNextFrame = true;
                 // 또는 다음 프레임을 기다리지 않고 즉시 렌더링
@@ -364,15 +371,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+
     // On entering/exiting AR, we need to set the camera clear color to transparent black
     let cameraEntity, skyType = null;
-    const clearColor = new Color();
+    const clearColor = new pc.Color();
 
     app.xr.on('start', () => {
         if (app.xr.type === 'immersive-ar') {
             cameraEntity = app.xr.camera;
             clearColor.copy(cameraEntity.camera.clearColor);
-            cameraEntity.camera.clearColor = new Color(0, 0, 0, 0);
+            cameraEntity.camera.clearColor = new pc.Color(0, 0, 0, 0);
 
             const sky = document.querySelector('pc-sky');
             if (sky && sky.type !== 'none') {
@@ -451,3 +459,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         dom.buttonContainer.classList.add('hidden');
     }
 });
+
+function createTextTexture(app, text, width = 512, height = 512) {
+    // Create a canvas to draw the text
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+
+    // Fill background
+    ctx.fillStyle = '#E33C2F';
+    ctx.fillRect(0, 0, width, height);
+
+    // Setup text
+    ctx.font = 'bold 68px "Noto Sans KR"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+
+    // Draw text in center
+    ctx.fillText(text, width / 2, height / 2);
+
+    // Draw a border
+    //ctx.strokeStyle = '#ff0000';
+    //ctx.lineWidth = 8;
+    //ctx.strokeRect(16, 16, width - 32, height - 32);
+
+    // Create a PlayCanvas texture from the canvas
+    const texture = new pc.Texture(app.graphicsDevice);
+    texture.setSource(canvas);
+
+    return texture;
+}
+
+function addExplainCube(app, message, cubeSize, x, y, z) {
+    // Create a cube entity
+    const cube = new pc.Entity('cube');
+    cube.addComponent('model', {
+        type: 'box'
+    });
+
+    // Create material with text texture
+    const material = new pc.StandardMaterial();
+    material.diffuseMap = createTextTexture(app, message);
+    material.update();
+
+    // Assign material to cube model
+    cube.model.material = material;
+
+    cube.setPosition(x, y, z);
+    // 큐브의 크기 설정
+    var size = new pc.Vec3(cubeSize, cubeSize, cubeSize); // 큐브의 크기를 2x2x2로 설정
+    cube.setLocalScale(size); // 엔티티의 로컬 스케일을 설정
+
+    // Add cube to scene
+    app.root.addChild(cube);
+
+    // Create rotation script
+    // const RotateScript = pc.createScript('rotateScript');
+
+    // RotateScript.prototype.update = function (dt) {
+    //     this.entity.rotate(10 * dt, 15 * dt, 5 * dt);
+    // };
+
+    // // Register and apply rotation script to the cube
+    // app.scripts.add(RotateScript);
+    // cube.addComponent('script');
+    // cube.script.create('rotateScript');
+
+    return cube;
+}

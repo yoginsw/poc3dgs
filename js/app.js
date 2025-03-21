@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loadingWrap').classList.add('hidden');
 
         const message = "징키스칸 동상";
-        addExplainCube(app, message, 3, 0, 20, 1);
+        addExplainCube(app, message, 4, 0, 20, 0.5);
 
     });
 
@@ -473,13 +473,14 @@ function createTextTexture(app, text, width = 512, height = 512) {
     ctx.fillRect(0, 0, width, height);
 
     // Setup text
-    ctx.font = 'bold 68px "Noto Sans KR"';
+    ctx.font = 'bold 75px "Noto Sans KR"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
 
     // Draw text in center
-    ctx.fillText(text, width / 2, height / 2);
+    ctx.fillText("# POI 정보", width / 2, 100);
+    ctx.fillText(text, width / 2, height / 2 + 40);
 
     // Draw a border
     //ctx.strokeStyle = '#ff0000';

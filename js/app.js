@@ -497,7 +497,7 @@ function createTextTexture(app, text, width = 512, height = 512) {
 function addExplainCube(app, message, cubeSize, x, y, z) {
     // Create a cube entity
     const cube = new pc.Entity('cube');
-    cube.addComponent('model', {
+    cube.addComponent('render', {
         type: 'box'
     });
 

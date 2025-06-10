@@ -504,6 +504,10 @@ function addExplainCube(app, message, cubeSize, x, y, z) {
     // Create material with text texture
     const material = new pc.StandardMaterial();
     material.diffuseMap = createTextTexture(app, message);
+    
+    material.emissiveMap = material.diffuseMap;
+    material.cull = pc.CULLFACE_NONE;
+
     material.update();
 
     // Assign material to cube model

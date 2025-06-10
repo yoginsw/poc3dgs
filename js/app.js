@@ -514,6 +514,17 @@ function addExplainCube(app, message, cubeSize, x, y, z) {
     var size = new pc.Vec3(cubeSize, cubeSize, cubeSize); // 큐브의 크기를 2x2x2로 설정
     cube.setLocalScale(size); // 엔티티의 로컬 스케일을 설정
 
+    const overlayLayer = app.scene.layers.getLayerByName('Immediate');
+
+    if (overlayLayer) {
+        // Plane 엔티티에 render 컴포넌트가 있다면 해당 컴포넌트의 레이어를 설정합니다.
+        // 이 방법은 해당 엔티티의 모든 렌더링 가능한 요소 (MeshInstance)를 해당 레이어로 이동시킵니다.
+        cube.render.layers = [overlayLayer.id];
+        console.log(`Cube added to OverlayLayer with ID: ${overlayLayer.id}`);
+    } else {
+        console.warn("OverlayLayer not found. Please create 'OverlayLayer' in PlayCanvas Editor under Project Settings -> Rendering.");
+    }
+
     // Add cube to scene
     app.root.addChild(cube);
 

@@ -497,7 +497,7 @@ function createTextTexture(app, text, width = 512, height = 512) {
 function addExplainCube(app, message, cubeSize, x, y, z) {
     // Create a cube entity
     const cube = new pc.Entity('cube');
-    cube.addComponent('render', {
+    cube.addComponent('model', {
         type: 'box'
     });
 
@@ -519,7 +519,7 @@ function addExplainCube(app, message, cubeSize, x, y, z) {
     if (overlayLayer) {
         // Plane 엔티티에 render 컴포넌트가 있다면 해당 컴포넌트의 레이어를 설정합니다.
         // 이 방법은 해당 엔티티의 모든 렌더링 가능한 요소 (MeshInstance)를 해당 레이어로 이동시킵니다.
-        cube.render.layers = [overlayLayer.id];
+        cube.model.render.layers = [overlayLayer.id];
         console.log(`Cube added to OverlayLayer with ID: ${overlayLayer.id}`);
     } else {
         console.warn("OverlayLayer not found. Please create 'OverlayLayer' in PlayCanvas Editor under Project Settings -> Rendering.");

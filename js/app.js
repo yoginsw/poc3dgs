@@ -494,7 +494,71 @@ function createTextTexture(app, text, width = 512, height = 512) {
     return texture;
 }
 
+// 1. 방향성 조명 (Directional Light) 추가 함수
+function addDirectionalLight(app, intensity = 1, color = [1, 1, 1]) {
+    const light = new pc.Entity('directionalLight');
+    light.addComponent('light', {
+        type: 'directional',
+        color: new pc.Color(color[0], color[1], color[2]),
+        intensity: intensity,
+        castShadows: true,
+        shadowDistance: 40,
+        shadowResolution: 2048,
+        shadowBias: 0.2,
+        normalOffsetBias: 0.05
+    });
+    
+    // 조명 방향 설정 (위에서 아래로, 약간 대각선)
+    light.setEulerAngles(45, 30, 0);
+    
+    app.root.addChild(light);
+    return light;
+}
+
+// 2. 환경 조명 (Ambient Light) 설정 함수
+function setupAmbientLight(app, color = [0.2, 0.2, 0.3], intensity = 0.4) {
+    app.scene.ambientLight = new pc.Color(color[0], color[1], color[2]);
+    // 또는 app.scene.ambientLuminance = intensity; // 최신 버전에서는 이 방법 사용
+}
+
+// 3. 포인트 라이트 추가 함수 (선택사항)
+function addPointLight(app, x, y, z, intensity = 1, color = [1, 1, 1], range = 10) {
+    const light = new pc.Entity('pointLight');
+    light.addComponent('light', {
+        type: 'point',
+        color: new pc.Color(color[0], color[1], color[2]),
+        intensity: intensity,
+        range: range,
+        castShadows: false
+    });
+    
+    light.setPosition(x, y, z);
+    app.root.addChild(light);
+    return light;
+}
+
+function setupBasicLighting(app) {
+    // 환경 조명 설정
+    setupAmbientLight(app, [0.8, 0.8, 0.9], 0.8);
+    
+    // 주 방향성 조명 추가
+    const mainLight = addDirectionalLight(app, 1.0, [1, 1, 0.9]);
+    
+    // 보조 조명 추가 (반대편에서 약하게)
+    const fillLight = addDirectionalLight(app, 0.3, [0.8, 0.9, 1]);
+    fillLight.setEulerAngles(-30, -45, 0);
+    
+    return { mainLight, fillLight };
+}
+
+
 function addExplainCube(app, message, cubeSize, x, y, z) {
+
+    if (!app.root.findByName('directionalLight')) {
+        setupBasicLighting(app);
+        console.log('Basic lighting setup completed');
+    }
+
     // Create a cube entity
     const cube = new pc.Entity('cube');
     cube.addComponent('render', {
@@ -506,7 +570,7 @@ function addExplainCube(app, message, cubeSize, x, y, z) {
     material.diffuseMap = createTextTexture(app, message);
     
     material.emissiveMap = material.diffuseMap;
-    material.cull = pc.CULLFACE_NONE;
+    //material.cull = pc.CULLFACE_NONE;
 
     material.update();
 
@@ -532,17 +596,27 @@ function addExplainCube(app, message, cubeSize, x, y, z) {
     // Add cube to scene
     app.root.addChild(cube);
 
-    // Create rotation script
-    // const RotateScript = pc.createScript('rotateScript');
-
-    // RotateScript.prototype.update = function (dt) {
-    //     this.entity.rotate(10 * dt, 15 * dt, 5 * dt);
+    // 커스텀 회전 애니메이션
+    // let rotationX = 0;
+    // let rotationY = 0;
+    // let rotationZ = 0;
+    
+    // const updateRotation = function(dt) {
+    //     rotationX += 10 * dt;
+    //     rotationY += 15 * dt;
+    //     rotationZ += 5 * dt;
+        
+    //     cube.setEulerAngles(rotationX, rotationY, rotationZ);
     // };
-
-    // // Register and apply rotation script to the cube
-    // app.scripts.add(RotateScript);
-    // cube.addComponent('script');
-    // cube.script.create('rotateScript');
+    
+    // // 애니메이션 루프에 추가
+    // app.on('update', updateRotation);
+    
+    // // 큐브 제거 시 이벤트 리스너도 제거하는 함수 추가
+    // cube.destroy = function() {
+    //     app.off('update', updateRotation);
+    //     pc.Entity.prototype.destroy.call(this);
+    // };
 
     return cube;
 }
